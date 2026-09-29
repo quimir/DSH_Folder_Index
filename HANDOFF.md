@@ -241,8 +241,37 @@ DSH **不从拖拽安装插件**——安装入口只有三种：npm/`github:` �
 | 方式 | 命令 / 操作 | 适用 |
 |---|---|---|
 | **A. 单文件安装器**（已交付） | `node install-dsh-host-paths.mjs` | 任意机器、任意 profile，含桌面端托管 profile；不需要账号 |
-| **B. GitHub 规格** | 推到仓库后：`dsh plugin --profile <p> add github:<owner>/dsh-host-paths` | 非托管 profile；一次推送，之后两端一条命令 |
+| **B. GitHub 规格** ✅ 已实测 | `dsh plugin --profile <p> add github:quimir/DSH_Folder_Index` | 非托管 profile；一次推送，之后两端一条命令 |
 | **C. npm 包** | `npm publish` 后由 App 的插件管理 UI 一键安装 | 桌面端托管 profile 的最省事路径（若它的 UI 接受 spec） |
+
+仓库：**<https://github.com/quimir/DSH_Folder_Index>**（默认分支 `main`）。
+
+**B 已实测通过**（Windows，2026-09-29）：在 `web` profile 上执行
+
+```bash
+dsh plugin --profile web add github:quimir/DSH_Folder_Index
+# → dependencies: + dsh-host-paths 0.3.0   Done in 2.6s   exit=0
+```
+
+两点值得记下来：
+
+1. **没有触发 `allowBuilds` 授权**。本包没有 `prepare` 脚本（源码即产物），所以 pnpm
+   没有构建脚本要拦；文档里说的「GitHub 源第一次 add 大概率失败」对**有构建步骤**的包
+   才成立。
+2. `dsh plugin add` 只往 profile 清单里**追加** `dependencies` 与 `dsh.profile.bundles`，
+   不动其它条目（实测 web profile 原有 8 个依赖与 11 个 bundle 条目全部保留）；
+   pnpm 输出里的 `-10` 是清理游离包，不是删依赖。
+
+**web 端语义**（同一份代码，不需要分支）：
+
+| 场景 | 可行性 |
+|---|---|
+| 同机浏览器（`dsh web` + 本机 Chrome/Edge） | ✅ 完全可行。真实浏览器的 HTML5 拖拽比 WebView2 更标准，`text/uri-list` 可能终于带值（零延迟精确路径）；`/log` 的 `uriList` 计数一看便知 |
+| 局域网/远程浏览器 → 另一台机器的 DSH | ⚠️ 拖拽语义只在「浏览器与宿主同机」时成立。宿主按名字在**自己**磁盘上找：同名会插错，找不到会明确报错（不臆造路径）。这种部署应改用 `browse` 后端的应用内目录浏览 |
+| 路由信任栅栏 | 默认只收**回环**；暴露到局域网时必须把 authority 写进 `webRuntime.trustedHosts`（与 `isTrustedApiRequest` 同一套规则），否则 `/locate` 返回 403、表现为「拖进去没反应」。**本版已实现**该兼容 |
+
+**冲突警告**：同一个 profile 里若还有 `dsh-plugin-drop-path`（它依赖 Electron 桥且会在
+window 捕获阶段 `stopImmediatePropagation` 抢走事件），本插件不会被调用。两个只能留一个。
 
 B/C 的仓库准备清单（`private: true` 只挡 `npm publish`，不影响 `github:` 安装）：
 
