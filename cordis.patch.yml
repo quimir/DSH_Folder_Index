@@ -1,0 +1,8 @@
+# dsh-host-paths bundle patch: mount the desktop-bridge shim row.
+#
+# The host half registers the /dsh-host-paths routes and injects one script into
+# the served index.html; the script defines globalThis.__DSH_HOST_PATHS__, which
+# @deepseek-ai/dsh-client-ui-conversation reads through hostPathBridge().
+- insert:
+    - id: dsh-host-paths
+      name: 'dsh-host-paths'

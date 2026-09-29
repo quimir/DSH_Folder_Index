@@ -1,0 +1,33 @@
+{
+  "name": "dsh-host-paths",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "main": "./index.js",
+  "description": "Supplies globalThis.__DSH_HOST_PATHS__ for DSH shells that do not implement the desktop bridge, so a dropped folder becomes a real @ reference instead of '只有桌面端支持添加文件夹'; also adds an 'Add folder' button that picks any folder on this machine. Cross-platform: win32 (registry + Windows Search), darwin (home folders + Spotlight mdfind), linux (XDG + plocate/locate).",
+  "keywords": ["deepseek", "harness", "dsh", "dsh-plugin", "drag-and-drop", "folder", "path", "drag-drop"],
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/quimir/DSH_Folder_Index.git" },
+  "homepage": "https://github.com/quimir/DSH_Folder_Index#readme",
+  "bugs": { "url": "https://github.com/quimir/DSH_Folder_Index/issues" },
+  "engines": { "node": ">=20" },
+  "exports": { ".": "./index.js", "./client": "./client.js" },
+  "files": [
+    "index.js",
+    "client.js",
+    "client-inject.js",
+    "cordis.patch.yml",
+    "install-dsh-host-paths.mjs",
+    "README.md",
+    "HANDOFF.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": ["@deepseek-ai/dsh-client-ui-conversation"]
+    }
+  }
+}
